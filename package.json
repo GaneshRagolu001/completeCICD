@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo tests executed"
+    "test": "echo tests executed",
+    "build": "echo Build completed > report.txt"
   },
   "keywords": [],
   "author": "",
