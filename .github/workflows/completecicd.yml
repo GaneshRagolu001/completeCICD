@@ -26,7 +26,7 @@ jobs:
                 key: npm-cache-${{matrix.node-version}}
             
             - run: npm install
-            - run: npm tests
+            - run: npm test
             - run: npm run build
             - uses: actions/upload-artifact@v4
               with:
