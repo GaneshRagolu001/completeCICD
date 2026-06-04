@@ -1,0 +1,12 @@
+{
+  "name": "completecicd",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo tests executed"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
