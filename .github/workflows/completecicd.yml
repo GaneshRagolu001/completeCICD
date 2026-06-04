@@ -37,6 +37,9 @@ jobs:
     verify:
         needs: build
         runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node-version: [18,20]
         steps:
             - uses: actions/download-artifact@v4
               with:
@@ -74,11 +77,6 @@ jobs:
             - name: Docker pulling without login
               run: docker pull ghcr.io/${{secrets.GIT_USERNAME}}/complete-cicd:v1
 
-            - name: Github login
-              run: docker login ghcr.io
-            
-            - name: docker pulling image from ghcr.io
-              run: docker pull ghcr.io/${{secrets.GIT_USERNAME}}/complete-cicd:v1
         
     deploy:
         needs: docker
