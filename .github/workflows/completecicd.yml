@@ -1,46 +1,56 @@
-name: Complete CI CD
+name: CompleteCICD
 
 on:
     push:
     pull_request:
-    workflow_dispatch:
+
+permissions:
+    contents: read
+    packages: write
 
 jobs:
     build:
         runs-on: ubuntu-latest
 
-        strategy:
-            matrix:
-                node-version: [18,20]
-        
         steps:
             - uses: actions/checkout@v4
-            
-            - uses: actions/setup-node@v4
-              with:
-                    node-version: ${{matrix.node-version}}
-                
-            - uses: actions/cache@v4
-              with:
-                path: ~./npm
-                key: npm-cache-${{matrix.node-version}}
-            
-            - run: npm install
-            - run: npm test
-            - run: npm run build
-            - uses: actions/upload-artifact@v4
-              with:
-                name: report
-                path: report.txt
+            - run: echo "Building application"
         
-    verify:
+    
+    docker:
         needs: build
         runs-on: ubuntu-latest
-
         steps:
-            - uses: actions/download-artifact@v4
-              with:
-                name: report
-            - run: cat report.txt
-
+            - uses: actions/checkout@v4
+            - name: Docker Login
+              run: echo "${{secrets.DOCKER_PASSWORD}}" | docker login -u "${{secrets.DOCKER_USERNAME}}" --password-stdin
             
+            - name: Build Image
+              run: docker build -t ${{secrets.DOCKER_USERNAME}}/complete-cicd:v1 .
+
+            - name: Push Docker hub
+              run: docker push ${{secrets.DOCKER_USERNAME}}/complete-cicd:v1
+              
+            - name: Github login
+              run: echo "${{secrets.GITHUB_TOKEN}}" | docker login ghcr.io -u "${{github.actor}}" --password-stdin
+              
+            - name: tag GHCR
+              run: docker tag ${{secrets.DOCKER_USERNAME}}/complete-cicd:v1 ghcr.io/${{github.actor}}/complete-cicd:v1
+            
+            - name: Push GHCR
+              run: docker push ghcr.io/${{github.actor}}/complete-cicd:v1
+            
+            - name: Github logout
+              run: docker logout ghcr.io
+            
+            - name: Docker pulling without login
+              run: docker pull ghcr.io/${{github.actor}}/complete-cicd:v1
+            
+            - name: docker pulling image from ghcr.io
+              run: docker pull ghcr.io/${{github.actor}}/complete-cicd:v1
+        
+    deploy:
+        needs: docker
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo "Deploying Application"
